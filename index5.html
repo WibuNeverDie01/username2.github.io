@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>KIỂM TRA GIỮA KÌ I - VẬT LÍ 10 (AI CHUẨN HÓA ĐÁP ÁN)</title>
+<style>
+    :root {
+        --primary: #1565c0;
+        --primary-dark: #0d47a1;
+        --primary-light: #e3f2fd;
+        --ai-purple: #4a148c;
+        --ai-bg: #f3e5f5;
+        --success: #2e7d32;
+        --danger: #c62828;
+        --bg: #f5f7fb;
+        --card: #ffffff;
+        --text: #212121;
+        --border: #cfd8dc;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background-color: var(--bg); color: var(--text); line-height: 1.5; padding-bottom: 70px; }
+    .container { max-width: 820px; margin: 0 auto; padding: 12px; }
+
+    /* Thanh điều hướng cố định trên cùng */
+    .sticky-bar {
+        position: -webkit-sticky; position: sticky; top: 0; z-index: 99;
+        background: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        padding: 10px 14px; display: flex; justify-content: space-between; align-items: center;
+        border-radius: 0 0 10px 10px;
+    }
+    .badge { font-size: 0.85rem; font-weight: 600; padding: 5px 10px; border-radius: 6px; }
+    .badge-info { background: var(--primary-light); color: var(--primary-dark); }
+    .badge-code { background: #fff3e0; color: #e65100; margin-left: 4px; }
+    .timer-box { font-size: 1.15rem; font-weight: bold; color: var(--danger); background: #ffebee; padding: 4px 10px; border-radius: 8px; border: 1px solid #ffcdd2; }
+
+    /* Khối thẻ bài thi */
+    .card { background: var(--card); border-radius: 10px; padding: 16px; margin-bottom: 16px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+    .section-title { font-size: 1.05rem; font-weight: 800; color: var(--primary-dark); margin: 22px 0 10px; padding-left: 8px; border-left: 4px solid var(--primary); }
+    .q-text { font-size: 0.98rem; font-weight: 600; margin-bottom: 12px; }
+
+    /* Tùy chọn trắc nghiệm */
+    .option-row { display: block; margin-bottom: 8px; cursor: pointer; }
+    .option-content {
+        display: flex; align-items: flex-start; padding: 10px 12px;
+        border: 1.5px solid var(--border); border-radius: 8px; font-size: 0.95rem; background: #fff;
+    }
+    .option-row input[type="radio"] { margin-right: 10px; margin-top: 3px; transform: scale(1.2); }
+
+    /* Bảng Đúng / Sai */
+    .tf-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 0.92rem; }
+    .tf-table th, .tf-table td { border: 1px solid var(--border); padding: 8px 6px; }
+    .tf-table th { background: #f1f3f4; text-align: center; font-weight: 600; }
+    .tf-col-opt { width: 55px; text-align: center; }
+    .tf-col-opt input { transform: scale(1.25); cursor: pointer; }
+
+    /* Đánh dấu đúng sai */
+    .ans-correct { background-color: #e8f5e9 !important; border-color: #4caf50 !important; color: #1b5e20 !important; font-weight: 600; }
+    .ans-wrong { background-color: #ffebee !important; border-color: #ef5350 !important; color: #b71c1c !important; }
+
+    /* Khối AI Phân tích chi tiết */
+    .ai-analysis-box {
+        display: none; margin-top: 12px; padding: 14px; background: #faf5ff;
+        border-radius: 8px; border: 1px solid #d1c4e9; border-left: 4px solid var(--ai-purple);
+        font-size: 0.9rem; color: #263238; line-height: 1.6;
+    }
+    .ai-tag {
+        display: inline-flex; align-items: center; background: var(--ai-bg);
+        color: var(--ai-purple); font-weight: 700; font-size: 0.8rem;
+        padding: 3px 8px; border-radius: 4px; margin-bottom: 6px;
+    }
+    .ai-point { margin-bottom: 6px; }
+    .ai-point b { color: #311b92; }
+
+    /* Nút bấm cảm ứng chuẩn di động */
+    .btn {
+        display: block; width: 100%; min-height: 48px; padding: 12px;
+        background: var(--primary); color: #fff; border: none; border-radius: 8px;
+        font-size: 1.05rem; font-weight: bold; cursor: pointer; text-align: center;
+        touch-action: manipulation; user-select: none;
+    }
+    .btn:active { background: var(--primary-dark); }
+    .btn-secondary { background: #546e7a; margin-top: 12px; }
+
+    /* Ô nhập chống zoom iOS */
+    .text-input {
+        width: 100%; min-height: 46px; font-size: 16px; padding: 10px;
+        border: 1.5px solid var(--border); border-radius: 8px; margin-bottom: 14px; outline: none;
+    }
+    .text-input:focus { border-color: var(--primary); }
+
+    /* Modal xác nhận nộp bài */
+    .modal-overlay {
+        position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.5); z-index: 1000; display: none;
+        justify-content: center; align-items: center; padding: 16px;
+    }
+    .modal-box { background: #fff; border-radius: 12px; padding: 20px; width: 100%; max-width: 400px; text-align: center; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 18px; }
+    .btn-cancel { background: #9e9e9e; }
+
+    /* Điểm số */
+    .score-card { background: var(--primary-light); border-radius: 10px; padding: 18px; text-align: center; margin-bottom: 16px; border: 1px solid #bbdefb; }
+    .score-val { font-size: 2.2rem; font-weight: 800; color: var(--primary-dark); margin: 6px 0; }
+    .feedback-note { text-align: left; background: #fff; padding: 12px; border-radius: 6px; font-size: 0.92rem; border-left: 4px solid var(--primary); margin-top: 10px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <!-- MÀN HÌNH BẮT ĐẦU -->
+    <div id="screen-start" class="card" style="margin-top: 20px;">
+        <div style="text-align: center; margin-bottom: 15px;">
+            <p style="font-size: 0.85rem; font-weight: bold; color: #555;">SỞ GD&ĐT TP ĐÀ NẴNG - TRƯỜNG THPT TRẦN QUÝ CÁP</p>
+            <h2 style="color: var(--primary-dark); font-size: 1.25rem; margin-top: 4px;">ĐỀ KIỂM TRA ĐỊNH KÌ GIỮA HỌC KÌ I</h2>
+            <p style="color: #616161; font-size: 0.9rem;">Môn: Vật lí 10 (Chương trình mới GDPT 2018) | Thời gian: 25 phút</p>
+        </div>
+
+        <label style="font-weight: 600; font-size: 0.95rem;">Họ và tên thí sinh:</label>
+        <input type="text" id="inp-name" class="text-input" placeholder="Nhập họ và tên thí sinh..." autocomplete="off">
+
+        <label style="font-weight: 600; font-size: 0.95rem;">Lớp:</label>
+        <input type="text" id="inp-class" class="text-input" placeholder="Nhập tên lớp..." autocomplete="off">
+
+        <div style="background: #e3f2fd; padding: 12px; border-radius: 8px; font-size: 0.88rem; margin-bottom: 18px; color: #0d47a1;">
+            <b>Cấu trúc đề kiểm tra (Tối đa 7,0 điểm trắc nghiệm):</b><br>
+            • <b>Phần I:</b> 18 câu trắc nghiệm nhiều lựa chọn (4,5 điểm).<br>
+            • <b>Phần II:</b> 6 câu trắc nghiệm Đúng/Sai (2,5 điểm).<br>
+            • <i>Toàn bộ câu hỏi được sắp xếp tăng dần độ khó; 2 câu cuối cùng của mỗi phần là các bài toán phân hóa điểm 10. Tích hợp AI giải chi tiết và chỉ ra bẫy sai sót sau khi nộp bài.</i>
+        </div>
+
+        <button type="button" id="btn-start" class="btn">BẮT ĐẦU LÀM BÀI</button>
+    </div>
+
+    <!-- MÀN HÌNH THI & KẾT QUẢ -->
+    <div id="screen-exam" style="display: none;">
+        <div class="sticky-bar">
+            <div>
+                <span class="badge badge-info" id="txt-student">HS: </span>
+                <span class="badge badge-code" id="txt-code">Mã đề: </span>
+            </div>
+            <div class="timer-box" id="timer-display">25:00</div>
+        </div>
+
+        <div id="result-box" style="display: none; margin-top: 14px;"></div>
+
+        <!-- PHẦN I -->
+        <div class="section-title">PHẦN I. CÂU HỎI NHIỀU LỰA CHỌN (18 CÂU - 4,5 ĐIỂM)</div>
+        <div id="container-p1"></div>
+
+        <!-- PHẦN II -->
+        <div class="section-title">PHẦN II. CÂU TRẮC NGHIỆM ĐÚNG/SAI (6 CÂU - 2,5 ĐIỂM)</div>
+        <div id="container-p2"></div>
+
+        <button type="button" id="btn-submit" class="btn" style="margin-top: 20px;">NỘP BÀI THI</button>
+        <button type="button" id="btn-restart" class="btn btn-secondary" style="display: none;">LÀM ĐỀ THI MỚI (MÃ ĐỀ KHÁC)</button>
+    </div>
+</div>
+
+<!-- MODAL XÁC NHẬN NỘP BÀI -->
+<div class="modal-overlay" id="confirm-modal">
+    <div class="modal-box">
+        <h3 style="color: var(--primary-dark); margin-bottom: 8px;">Xác nhận nộp bài</h3>
+        <p style="font-size: 0.95rem; color: #555;">Em có chắc chắn muốn nộp bài thi ngay bây giờ không?</p>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-cancel" id="btn-modal-cancel">Xem lại</button>
+            <button type="button" class="btn" id="btn-modal-ok">Nộp bài</button>
+        </div>
+    </div>
+</div>
+
+<script>
+/* ===============================================================
+   NGÂN HÀNG CÂU HỎI VẬT LÍ 10 ĐÃ ĐƯỢC AI XÁC THỰC KHOA HỌC 100%
+   =============================================================== */
+// 1. PHẦN I: TRẮC NGHIỆM 4 LỰA CHỌN (18 CÂU ĐƯỢC CHỌN TĂNG DẦN ĐỘ KHÓ)
+const poolP1_Easy = [ // Nhận biết
+    { 
+        q: "Thành tựu nghiên cứu nào sau đây của Vật lí được coi là có vai trò quan trọng trong việc mở đầu cho cuộc cách mạng công nghiệp lần thứ nhất?", 
+        options: ["Nghiên cứu về lực vạn vật hấp dẫn.", "Nghiên cứu về nhiệt động lực học (chế tạo máy hơi nước).", "Nghiên cứu về hiện tượng cảm ứng điện từ.", "Nghiên cứu về thuyết tương đối."], 
+        ans: 1, 
+        aiAnalysis: `
+            <div class="ai-point"><b>✅ Đáp án đúng chuẩn: B</b> (SGK Vật lí 10, Bài 1).</div>
+            <div class="ai-point"><b>🔍 AI Phân tích lịch sử khoa học:</b> Sự phát triển của Nhiệt động lực học mở đầu cho việc phát minh ra động cơ hơi nước của James Watt, thúc đẩy cuộc CMCN lần 1. (Hiện tượng cảm ứng điện từ mở đầu cho CMCN lần 2).</div>` 
+    },
+    { 
+        q: "Để đảm bảo an toàn trong phòng thực hành môn Vật lí, học sinh cần tuân thủ nguyên tắc nào dưới đây?", 
+        options: ["Tự ý làm thí nghiệm theo sự hướng dẫn của bạn bè cùng lớp.", "Có thể nhận biết hóa chất hoặc nguồn nhiệt bằng cách ngửi và chạm tay trực tiếp.", "Đọc kĩ nội quy, hướng dẫn của giáo viên và thực hiện đúng các quy tắc an toàn phòng thực hành.", "Mang thức ăn, đồ uống vào khu vực làm thí nghiệm."], 
+        ans: 2, 
+        aiAnalysis: `
+            <div class="ai-point"><b>✅ Đáp án đúng chuẩn: C</b>. Luôn đọc kĩ nội quy và chỉ làm thí nghiệm khi có sự hướng dẫn, cho phép của giáo viên bộ môn.</div>` 
+    },
+    { 
+        q: "Sai số của một phép đo đại lượng vật lí bao gồm những loại sai số nào?", 
+        options: ["Sai số ngẫu nhiên và sai số đơn vị.", "Sai số ngẫu nhiên và sai số hệ thống.", "Sai số hệ thống và sai số đơn vị.", "Sai số đơn vị và sai số dụng cụ."], 
+        ans: 1, 
+        aiAnalysis: `
+            <div class="ai-point"><b>✅ Đáp án đúng chuẩn: B</b>. Phép đo luôn gồm 2 loại sai số: Sai số hệ thống (gồm sai số dụng cụ) và Sai số ngẫu nhiên do thao tác/môi trường.</div>` 
+    },
+    { 
+        q: "Phép đo nào sau đây là một phép đo gián tiếp?", 
+        options: ["Phép đo chiều dài cạnh bàn học bằng thước cuộn.", "Phép đo thể tích của một khối gỗ hình hộp chữ nhật thông qua việc đo các cạnh (V = a.b.c).", "Phép đo thời gian rơi của một viên bi bằng đồng hồ hiện số.", "Phép đo nhiệt độ nước bằng nhiệt kế."], 
+        ans: 1, 
+        aiAnalysis: `
+            <div class="ai-point"><b>✅ Đáp án đúng chuẩn: B</b>. Đo gián tiếp là phép đo đại lượng thông qua công thức toán học liên hệ với các đại lượng đo trực tiếp. Ở đây $V = a \cdot b \cdot c$ là đo gián tiếp.</div>` 
+    },
+    { 
+        q: "Kết luận của Aristote: 'Vật nặng rơi nhanh hơn vật nhẹ, vật càng nặng rơi càng nhanh' là kết quả dựa trên:", 
+        options: ["Phương pháp mô hình hóa.", "Phương pháp thực nghiệm khoa học có đo lường.", "Phương pháp suy luận chủ quan dựa trên quan sát cảm tính.", "Phương pháp tính toán vi tích phân."], 
+        ans: 2, 
+        aiAnalysis: `
+            <div class="ai-point"><b>✅ Đáp án đúng chuẩn: C</b>. Aristote chỉ quan sát thấy chiếc lá rơi chậm hơn hòn đá và kết luận cảm tính mà không làm thực nghiệm loại trừ sức cản không khí (phải đến Galilei mới dùng thực nghiệm bác bỏ).</div>` 
+    },
+    { 
+        q: "Gia tốc là một đại lượng vectơ đặc trưng cho:", 
+        options: ["Độ nhanh hay chậm của chuyển động.", "Sự thay đổi nhanh hay chậm của độ dịch chuyển.", "Sự biến thiên nhanh hay chậm của vận tốc theo thời gian.", "Quãng đường vật đi được trong một đơn vị thời gian."], 
+        ans: 2, 
+        aiAnalysis: `
+            <div class="ai-point"><b>✅ Đáp án đúng chuẩn: C</b>. Gia tốc $\vec{a} = \frac{\Delta \vec{v}}{\Delta t}$ đặc trưng cho tốc độ thay đổi (sự biến thiên nhanh hay chậm) của vận tốc. Tốc độ chuyển động được đặc trưng bởi $v$.</div>` 
+    },
+    { 
+        q: "Một vật chuyển động rơi tự do trong trọng trường gần mặt đất có tính chất là:", 
+        options: ["Chuyển động thẳng đều.", "Chuyển động thẳng chậm dần đều.", "Chuyển động thẳng nhanh dần đều theo phương thẳng đứng.", "Chuyển động cong biến đổi đều."], 
+        ans: 2, 
+        aiAnalysis: `
+            <div class="ai-point"><b>✅ Đáp án đúng chuẩn: C</b>. Rơi tự do là chuyển động thẳng nhanh dần đều dưới tác dụng duy nhất của trọng lực, phương thẳng đứng, chiều từ trên xuống dưới.</div>` 
+    },
+    { 
+        q: "Khi một vật chuyển động thẳng và không đổi chiều chuyển động, mối quan hệ giữa quãng đường đi được s và độ lớn độ dịch chuyển |d| là:", 
+        options: ["Quãng đường s luôn luôn nhỏ hơn |d|.", "Quãng đường s bằng độ lớn độ dịch chuyển |d|.", "Quãng đường s luôn lớn hơn |d|.", "Không thể so sánh được."], 
+        ans: 1, 
+        aiAnalysis: `
+            <div class="ai-point"><b>✅ Đáp án đúng chuẩn: B</b>. Khi vật đi thẳng không đổi chiều thì chiều dài quãng đường $s$ trùng khớp với độ lớn của vectơ độ dịch chuyển $|d|$.</div>` 
+    }
+];
+
+const poolP1_Medium = [ // Thông hiểu
+    { 
+        q: "Trong chuyển động thẳng nhanh dần đều, đặc điểm của vectơ gia tốc là:", 
+        options: ["Ngược chiều với vectơ vận tốc.", "Cùng phương, cùng chiều với vectơ vận tốc (tích số a.v > 0).", "Có độ lớn luôn bằng không.", "Vuông góc với quỹ đạo chuyển động."], 
+        ans: 1, 
+        aiAnalysis: `
+            <div class="ai-point"><b>✅ Đáp án đúng chuẩn: B</b>. Trong CĐTNDĐ, vectơ gia tốc cùng chiều với vectơ vận tốc nên $a$ và $v$ cùng dấu ($a \cdot v > 0$). Ngược lại, chậm dần đều thì $a \cdot v < 0$.</div>` 
+    },
+    { 
+        q: "Một chất điểm chuyển động có phương trình vận tốc: v = 5 - 3t (m/s). Khẳng định nào sau đây là SAI?", 
+        options: ["Chất điểm chuyển động thẳng chậm dần đều.", "Gia tốc của chất điểm có giá trị là a = -3 m/s².", "Vận tốc ban đầu của chất điểm là v₀ = 5 m/s.", "Chất điểm chuyển động thẳng nhanh dần đều."], 
+        ans: 3, 
+        aiAnalysis: `
+            <div class="ai-point"><b>✅ Đáp án đúng chuẩn: D (Khẳng định sai)</b>.</div>
+            <div class="ai-point"><b>🔍 AI Giải chi tiết:</b> Phương trình có dạng $v = v_0 + at \Rightarrow v_0 = 5\text{ m/s} > 0$ và $a = -3\text{ m/s}^2 < 0$. Vì $a \cdot v_0 = -15 < 0$ nên vật chuyển động thẳng chậm dần đều. Do đó khẳng định D là sai.</div>` 
+    },
+    { 
+        q: "Một người đi xe máy xuất phát từ điểm A chạy một vòng tròn quanh công viên có chu vi 2 km rồi quay trở lại đúng điểm A. Độ lớn độ dịch chuyển của người đó là:", 
+        options: ["2 km.", "4 km.", "0 km.", "1 km."], 
+        ans: 2, 
+        aiAnalysis: `
+            <div class="ai-point"><b>✅ Đáp án đúng chuẩn: C (0 km)</b>.</div>
+            <div class="ai-point"><b>🔍 AI Phân tích bản chất:</b> Quãng đường đi được là $s = 2\text{ km}$, nhưng vì vị trí điểm cuối trùng với vị trí điểm đầu nên vectơ độ dịch chuyển $\vec{d} = \vec{0} \Rightarrow d = 0\text{ km}$.</div>` 
+    },
+    { 
+        q: "Trong một bài thực hành, học sinh đo được tốc độ của viên bi là v = 2,0 ± 0,1 m/s. Sai số tỉ đối của phép đo này bằng:", 
+        options: ["5,0%.", "20,0%.", "0,5%.", "0,1%."], 
+        ans: 0, 
+        aiAnalysis: `
+            <div class="ai-point"><b>✅ Đáp án đúng chuẩn: A (5,0%)</b>.</div>
+            <div class="ai-point"><b>🔍 Công thức tính:</b> Sai số tỉ đối $\delta v = \frac{\Delta v}{\bar{v}} \times 100\% = \frac{0,1}{2,0} \times 100\% = 5,0\%$.</div>` 
+    },
+    { 
+        q: "Thả hai vật rơi tự do đồng thời từ hai độ cao h₁ và h₂ khác nhau. Biết thời gian chạm đất của vật thứ hai gấp đôi vật thứ nhất (t₂ = 2t₁). Tỉ số độ cao h₁/h₂ bằng:", 
+        options: ["2.", "0,5.", "0,25.", "4."], 
+        ans: 2, 
+        aiAnalysis: `
+            <div class="ai-point"><b>✅ Đáp án đúng chuẩn: C (0,25)</b>.</div>
+            <div class="ai-point"><b>🔍 Lập luận:</b> $h = \frac{1}{2}gt^2 \Rightarrow \frac{h_1}{h_2} = \left(\frac{t_1}{t_2}\right)^2 = \left(\frac{1}{2}\right)^2 = \frac{1}{4} = 0,25$.</div>` 
+    },
+    { 
+        q: "Một ô tô đang chuyển động với vận tốc 10 m/s thì tăng tốc chuyển động thẳng nhanh dần đều với gia tốc a = 0,8 m/s². Độ biến thiên vận tốc của xe sau 10 giây là:", 
+        options: ["8,0 m/s.", "18,0 m/s.", "0,8 m/s.", "10,0 m/s."], 
+        ans: 0, 
+        aiAnalysis: `
+            <div class="ai-point"><b>✅ Đáp án đúng chuẩn: A (8,0 m/s)</b>.</div>
+            <div class="ai-point"><b>🔍 Cảnh báo bẫy:</b> Đề hỏi <i>độ biến thiên vận tốc</i> $\Delta v = a \cdot \Delta t = 0,8 \times 10 = 8,0\text{ m/s}$. Nếu đề hỏi vận tốc lúc sau thì mới là $v = v_0 + \Delta v = 18\text{ m/s}$.</div>` 
+    }
+];
+
+const poolP1_Hard = [ // Vận dụng
+    { 
+        q: "Một ô tô đang chuyển động với vận tốc 15 m/s thì hãm phanh chuyển động thẳng chậm dần đều. Đi được quãng đường 50 m thì xe dừng hẳn. Gia tốc của xe là:", 
+        options: ["- 2,25 m/s².", "+ 2,25 m/s².", "- 4,50 m/s².", "+ 4,50 m/s²."], 
+        ans: 0, 
+        aiAnalysis: `
+            <div class="ai-point"><b>✅ Đáp án đúng chuẩn: A (- 2,25 m/s²)</b>.</div>
+            <div class="ai-point"><b>🔍 Công thức độc lập thời gian:</b> $v^2 - v_0^2 = 2as \Rightarrow 0^2 - 15^2 = 2 \cdot a \cdot 50 \Rightarrow a = \frac{-225}{100} = -2,25\text{ m/s}^2$. Dấu âm chỉ gia tốc ngược chiều chuyển động.</div>` 
+    },
+    { 
+        q: "Một vật rơi tự do không vận tốc ban đầu từ độ cao 500 m xuống mặt đất. Lấy g = 10 m/s². Thời gian vật rơi hết toàn bộ quãng đường là:", 
+        options: ["10 s.", "50 s.", "7,07 s.", "5 s."], 
+        ans: 0, 
+        aiAnalysis: `
+            <div class="ai-point"><b>✅ Đáp án đúng chuẩn: A (10 s)</b>.</div>
+            <div class="ai-point"><b>🔍 Lời giải:</b> $t = \sqrt{\frac{2h}{g}} = \sqrt{\frac{2 \times 500}{10}} = \sqrt{100} = 10\text{ s}$.</div>` 
+    }
+];
+
+const poolP1_Hardest = [ // VẬN DỤNG CAO (2 CÂU KHÓ NHẤT ĐẶT Ở CÂU 17 & CÂU 18)
+    { 
+        q: "Một vật chuyển động thẳng nhanh dần đều từ A đến B. Vận tốc của vật khi đi qua A là 4 m/s và khi đi qua B là 12 m/s. Vận tốc của vật khi đi qua trung điểm C của đoạn đường AB có độ lớn bằng:", 
+        options: ["8,94 m/s.", "8,00 m/s.", "9,25 m/s.", "7,81 m/s."], 
+        ans: 0, 
+        aiAnalysis: `
+            <div class="ai-point"><b>✅ Đáp án đúng chuẩn: A (8,94 m/s)</b>.</div>
+            <div class="ai-point"><b>🔍 AI Chỉ ra sai lầm cực kì phổ biến:</b> Học sinh thường nhầm lấy trung bình cộng $\frac{4 + 12}{2} = 8\text{ m/s}$ (SAI).<br>
+            • <i>Chứng minh chuẩn:</i> Gọi $s$ là độ dài đoạn $AB$, $C$ là trung điểm nên $AC = CB = s/2$.<br>
+            Áp dụng công thức độc lập thời gian: $v_C^2 - v_A^2 = 2a\frac{s}{2} = as$ và $v_B^2 - v_C^2 = 2a\frac{s}{2} = as$.<br>
+            Cân bằng hai biểu thức: $v_C^2 - v_A^2 = v_B^2 - v_C^2 \Rightarrow 2v_C^2 = v_A^2 + v_B^2 \Rightarrow v_C = \sqrt{\frac{v_A^2 + v_B^2}{2}} = \sqrt{\frac{4^2 + 12^2}{2}} = \sqrt{80} \approx 8,94\text{ m/s}$.</div>` 
+    },
+    { 
+        q: "Một xe ô tô đang chuyển động thì hãm phanh chuyển động thẳng chậm dần đều cho đến khi dừng lại hẳn. Quãng đường xe đi được trong giây đầu tiên gấp 19 lần quãng đường xe đi được trong giây cuối cùng. Tổng quãng đường xe đi được trong giây đầu tiên và giây cuối cùng là 20 m. Toàn bộ quãng đường ô tô đi được từ lúc bắt đầu hãm phanh đến khi dừng hẳn là:", 
+        options: ["100 m.", "72 m.", "120 m.", "85 m."], 
+        ans: 0, 
+        aiAnalysis: `
+            <div class="ai-point"><b>✅ Đáp án đúng chuẩn: A (100 m)</b>.</div>
+            <div class="ai-point"><b>🔍 AI Hướng dẫn giải chi tiết:</b><br>
+            • Đặt quãng đường giây đầu là $s_1$, giây cuối là $s_{cuối}$. Ta có hệ: $s_1 = 19 s_{cuối}$ và $s_1 + s_{cuối} = 20\text{ m} \Rightarrow s_{cuối} = 1\text{ m}$ và $s_1 = 19\text{ m}$.<br>
+            • Trong chuyển động chậm dần đều dừng hẳn, đảo chiều thời gian ta xem như vật nhanh dần đều từ trạng thái nghỉ với gia tốc $a$: Quãng đường trong 1 giây đầu (chính là giây cuối khi hãm phanh) là $s_{cuối} = \frac{1}{2} a \cdot 1^2 = 1\text{ m} \Rightarrow a = 2\text{ m/s}^2$.<br>
+            • Quãng đường trong giây đầu tiên hãm phanh: $s_1 = v_0 \cdot 1 - \frac{1}{2} a \cdot 1^2 = v_0 - 1 = 19\text{ m} \Rightarrow v_0 = 20\text{ m/s}$.<br>
+            • Toàn bộ quãng đường hãm phanh đến khi dừng hẳn: $s = \frac{v_0^2}{2a} = \frac{20^2}{2 \times 2} = \frac{400}{4} = 100\text{ m}$.</div>` 
+    }
+];
+
+// 2. PHẦN II: TRẮC NGHIỆM ĐÚNG / SAI (6 CÂU - CÂU 5 & 6 LÀ NÂNG CAO)
+const poolP2_Standard = [
+    {
+        title: "Một vật chuyển động thẳng có đồ thị độ dịch chuyển – thời gian (d – t) như sau: Trong 2 giây đầu d tăng đều từ 0 lên 8 m; từ giây thứ 2 đến giây thứ 4 d giảm đều từ 8 m xuống 4 m.",
+        items: [
+            { text: "Từ 0s đến 2s, quãng đường vật đi được là 8 m.", ans: true, exp: "Đúng, vật chuyển động theo chiều dương từ vị trí 0 đến 8 m nên quãng đường s = 8 m." },
+            { text: "Từ 2s đến 4s, độ dịch chuyển của vật mang giá trị là - 4 m.", ans: true, exp: "Đúng: Δd = d(4s) - d(2s) = 4 - 8 = -4 m (vật đổi chiều chuyển động theo chiều âm)." },
+            { text: "Độ dịch chuyển tổng cộng của vật trong toàn bộ 4 giây đầu là 4 m.", ans: true, exp: "Đúng: d_tổng = d(4s) - d(0s) = 4 - 0 = 4 m." },
+            { text: "Tổng quãng đường vật đã đi được trong toàn bộ 4 giây là 12 m.", ans: true, exp: "Đúng: s = s₁ + s₂ = 8 m + |4 - 8| m = 8 + 4 = 12 m." }
+        ],
+        aiGeneral: "Độ dịch chuyển d có thể âm, dương hoặc bằng 0 tùy thuộc vị trí đầu và cuối; trong khi quãng đường s luôn là đại lượng không âm."
+    },
+    {
+        title: "Hai bạn học sinh dùng thước đo cùng tiến hành đo chiều dài của một cánh cửa sổ. Bạn thứ nhất ghi kết quả d₁ = 100 ± 1 cm. Bạn thứ hai ghi kết quả d₂ = 120 ± 2 cm.",
+        items: [
+            { text: "Bạn thứ hai đã thực hiện phép đo có độ chính xác cao hơn bạn thứ nhất.", ans: false, exp: "Sai: Sai số tỉ đối của bạn thứ nhất là 1/100 = 1,0%; của bạn thứ hai là 2/120 ≈ 1,67%. Sai số tỉ đối càng nhỏ thì phép đo càng chính xác, nên bạn thứ nhất đo chính xác hơn." },
+            { text: "Sai số tỉ đối của phép đo của bạn thứ nhất là 1,0%.", ans: true, exp: "Đúng: δd₁ = (1 / 100) * 100% = 1,0%." },
+            { text: "Sai số tỉ đối của phép đo của bạn thứ hai xấp xỉ bằng 1,67%.", ans: true, exp: "Đúng: δd₂ = (2 / 120) * 100% ≈ 1,67%." },
+            { text: "Cả hai bạn đều đang sử dụng phương pháp đo gián tiếp.", ans: false, exp: "Sai: Dùng thước đặt trực tiếp vào mép cửa để đọc kết quả là phép đo trực tiếp." }
+        ],
+        aiGeneral: "Độ chính xác của phép đo được đánh giá qua sai số tỉ đối chứ không phải sai số tuyệt đối."
+    },
+    {
+        title: "Khi nhận xét về đặc điểm của chuyển động rơi tự do của một vật trong trọng trường (bỏ qua mọi lực cản của không khí):",
+        items: [
+            { text: "Sự rơi tự do là sự rơi chỉ dưới tác dụng duy nhất của trọng lực.", ans: true, exp: "Đúng theo định nghĩa chuẩn SGK Vật lí 10." },
+            { text: "Rơi tự do có phương thẳng đứng, chiều chuyển động hướng từ dưới lên trên.", ans: false, exp: "Sai: Chiều chuyển động rơi tự do luôn hướng từ trên xuống dưới." },
+            { text: "Ở cùng một nơi trên Trái Đất, mọi vật rơi tự do đều có cùng một gia tốc rơi g như nhau.", ans: true, exp: "Đúng: Gia tốc rơi tự do g không phụ thuộc vào khối lượng của vật." },
+            { text: "Gia tốc rơi tự do phụ thuộc vào khối lượng và kích thước hình học của vật thể.", ans: false, exp: "Sai: Khi bỏ qua lực cản không khí, viên bi sắt và chiếc lông vũ đều rơi với cùng gia tốc g." }
+        ],
+        aiGeneral: "Rơi tự do là chuyển động thẳng nhanh dần đều với gia tốc g không phụ thuộc vào khối lượng."
+    },
+    {
+        title: "Một chiếc thuyền máy chuyển động trên một dòng sông thẳng có hai bờ song song cách nhau 60 m. Tốc độ của thuyền đối với nước đứng yên là 10 m/s, tốc độ chảy của dòng nước so với bờ là 2 m/s:",
+        items: [
+            { text: "Thuyền không thể chạy ngược dòng nước được.", ans: false, exp: "Sai: Vì tốc độ thuyền đối với nước (10 m/s) lớn hơn tốc độ dòng nước (2 m/s) nên khi chạy ngược dòng, tốc độ của thuyền đối với bờ vẫn đạt 10 - 2 = 8 m/s." },
+            { text: "Tốc độ của thuyền đối với bờ khi chạy xuôi dòng nước là 12 m/s.", ans: true, exp: "Đúng: v_xuôi = v_thuyền + v_nước = 10 + 2 = 12 m/s." },
+            { text: "Người lái hướng mũi thuyền luôn vuông góc với bờ sông thì thời gian để thuyền sang đến bờ bên kia là 6 giây.", ans: true, exp: "Đúng: Thời gian qua sông chỉ phụ thuộc vận tốc vuông góc bờ: t = d / v_thuyền = 60 / 10 = 6 s." },
+            { text: "Khi sang tới bờ bên kia, vị trí của thuyền bị dòng nước đẩy dạt xuôi theo hạ lưu một đoạn là 12 m.", ans: true, exp: "Đúng: Đoạn dạt hạ lưu s = v_nước * t = 2 * 6 = 12 m." }
+        ],
+        aiGeneral: "Đây là bài toán cộng vận tốc kinh điển: Chuyển động qua sông vuông góc độc lập với chuyển động trôi xuôi dòng theo bờ."
+    }
+];
+
+const poolP2_Hardest = [ // CÂU 5 VÀ CÂU 6 LÀ CÁC BÀI TOÁN PHÂN HÓA NÂNG CAO
+    {
+        title: "Đồ thị vận tốc - thời gian (v - t) của một chất điểm gồm 3 giai đoạn: Từ 0 đến 40s vận tốc tăng đều từ 40 cm/s lên 120 cm/s; từ 40s đến 80s vận tốc giữ nguyên ở mức 120 cm/s; từ 80s đến 160s vận tốc giảm đều từ 120 cm/s về 0:",
+        items: [
+            { text: "Gia tốc của chất điểm trong 40 giây đầu tiên có độ lớn là 2 cm/s².", ans: true, exp: "Đúng: a₁ = (v₁ - v₀)/t₁ = (120 - 40)/40 = 2 cm/s²." },
+            { text: "Trong khoảng thời gian từ 40 giây đến 80 giây, chất điểm đứng yên không chuyển động.", ans: false, exp: "Sai: Vận tốc không đổi v = 120 cm/s nghĩa là vật đang chuyển động thẳng đều, không phải đứng yên." },
+            { text: "Độ dịch chuyển của chất điểm trong 40 giây đầu tiên có giá trị bằng 3,2 m.", ans: true, exp: "Đúng: d₁ = diện tích hình thang dưới đồ thị v-t = [(40 + 120) * 40] / 2 = 3200 cm = 3,2 m." },
+            { text: "Tổng quãng đường mà chất điểm đi được trong toàn bộ 160 giây là 12,8 m.", ans: true, exp: "Đúng: Tổng quãng đường bằng tổng diện tích: s = s₁ + s₂ + s₃ = 3200 + (120 * 40) + [(120 * 80)/2] = 3200 + 4800 + 4800 = 12800 cm = 12,8 m." }
+        ],
+        aiGeneral: "Diện tích giới hạn bởi đồ thị vận tốc - thời gian và trục hoành chính là độ lớn độ dịch chuyển/quãng đường đi được."
+    },
+    {
+        title: "Hai người cùng xuất phát đi xe đạp từ địa điểm A đến địa điểm B cùng lúc. Người thứ nhất đi thẳng theo đường AB dài 6 km. Người thứ hai đi theo đường vòng qua C rồi mới đến B tạo thành tam giác vuông tại B với BC = 7 km (AB ⊥ BC) và cả hai cùng đến B tại cùng một thời điểm:",
+        items: [
+            { text: "Độ dịch chuyển của người thứ nhất có độ lớn bằng 6 km.", ans: true, exp: "Đúng: Người thứ nhất đi thẳng từ A đến B nên |d₁| = AB = 6 km." },
+            { text: "Độ dịch chuyển của người thứ hai có độ lớn bằng 6 km.", ans: true, exp: "Đúng (Điểm sửa đề nháp): Độ dịch chuyển chỉ phụ thuộc vị trí đầu (A) và vị trí cuối (B), cả hai người đều kết thúc ở B nên vectơ độ dịch chuyển của người thứ hai cũng chính là vectơ AB (độ lớn 6 km)." },
+            { text: "Quãng đường người thứ hai đi được lớn hơn quãng đường người thứ nhất đi được.", ans: true, exp: "Đúng: Người thứ hai đi quãng đường s₂ = AC + CB. Trong tam giác vuông ABC, AC > AB nên s₂ > s₁." },
+            { text: "Độ lớn vận tốc trung bình của hai người trong suốt chuyến đi là khác nhau.", ans: false, exp: "Sai: Vận tốc trung bình bằng độ dịch chuyển chia thời gian (v_tb = d / t). Vì cả hai có cùng độ dịch chuyển d = 6 km và cùng thời gian t nên độ lớn vận tốc trung bình của hai người là HOÀN TOÀN BẰNG NHAU." }
+        ],
+        aiGeneral: "Phân biệt cốt lõi: Tốc độ trung bình phụ thuộc vào quãng đường s; còn Vận tốc trung bình chỉ phụ thuộc vào độ dịch chuyển d."
+    }
+];
+
+/* ===============================================================
+   BIẾN TOÀN CỤC & ĐIỀU KHIỂN SỰ KIỆN
+   =============================================================== */
+let currentP1 = [];
+let currentP2 = [];
+let timerInterval = null;
+let timeLeft = 25 * 60;
+let studentName = "";
+let studentClass = "";
+let examCode = 101;
+
+function shuffle(arr) {
+    return [...arr].sort(() => Math.random() - 0.5);
+}
+
+// BẮT ĐẦU LÀM BÀI (HOẠT ĐỘNG 100% TRÊN MỌI TRÌNH DUYỆT)
+function handleStart() {
+    let nameVal = document.getElementById("inp-name").value.trim();
+    let classVal = document.getElementById("inp-class").value.trim();
+
+    studentName = nameVal || "Học sinh";
+    studentClass = classVal || "10";
+
+    examCode = Math.floor(Math.random() * (998 - 102 + 1)) + 102;
+    document.getElementById("txt-student").innerText = `HS: ${studentName} (${studentClass})`;
+    document.getElementById("txt-code").innerText = `Mã đề: ${examCode}`;
+
+    // Sắp xếp ngầm độ khó tăng dần:
+    // Phần I (18 câu): 8 Nhận biết + 6 Thông hiểu + 2 Vận dụng + 2 Câu phân hóa khó nhất ở cuối
+    const p1_p1 = shuffle(poolP1_Easy).slice(0, 8);
+    const p1_p2 = shuffle(poolP1_Medium).slice(0, 6);
+    const p1_p3 = shuffle(poolP1_Hard).slice(0, 2);
+    const p1_p4 = shuffle(poolP1_Hardest).slice(0, 2);
+    currentP1 = [...p1_p1, ...p1_p2, ...p1_p3, ...p1_p4];
+
+    // Phần II (6 câu): 4 câu Cơ bản/Thông hiểu + 2 Câu tình huống nâng cao ở cuối
+    const p2_p1 = shuffle(poolP2_Standard).slice(0, 4);
+    const p2_p2 = shuffle(poolP2_Hardest).slice(0, 2);
+    currentP2 = [...p2_p1, ...p2_p2];
+
+    renderExam();
+
+    document.getElementById("screen-start").style.display = "none";
+    document.getElementById("screen-exam").style.display = "block";
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    startTimer();
+}
+
+function startTimer() {
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        let m = Math.floor(timeLeft / 60);
+        let s = timeLeft % 60;
+        document.getElementById("timer-display").innerText = 
+            `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            processSubmit();
+        }
+    }, 1000);
+}
+
+// RENDER GIAO DIỆN CÂU HỎI
+function renderExam() {
+    // 1. Phần I
+    const c1 = document.getElementById("container-p1");
+    c1.innerHTML = "";
+    currentP1.forEach((q, idx) => {
+        const qCard = document.createElement("div");
+        qCard.className = "card";
+        qCard.innerHTML = `
+            <div class="q-text">
+                <span style="color: var(--primary);">Câu ${idx + 1}:</span> ${q.q}
+            </div>
+            <div>
+                ${q.options.map((opt, oIdx) => `
+                    <label class="option-row">
+                        <div class="option-content" id="opt-p1-${idx}-${oIdx}">
+                            <input type="radio" name="p1_${idx}" value="${oIdx}">
+                            <span><b>${['A', 'B', 'C', 'D'][oIdx]}.</b> ${opt}</span>
+                        </div>
+                    </label>
+                `).join('')}
+            </div>
+            <div class="ai-analysis-box" id="ai-exp-p1-${idx}">
+                <div class="ai-tag">🤖 AI PHÂN TÍCH & GIẢI THÍCH CHI TIẾT</div>
+                ${q.aiAnalysis}
+            </div>
+        `;
+        c1.appendChild(qCard);
+    });
+
+    // 2. Phần II
+    const c2 = document.getElementById("container-p2");
+    c2.innerHTML = "";
+    currentP2.forEach((q, idx) => {
+        const qCard = document.createElement("div");
+        qCard.className = "card";
+        qCard.innerHTML = `
+            <div class="q-text">
+                <span style="color: var(--primary);">Câu ${idx + 1}:</span> ${q.title}
+            </div>
+            <table class="tf-table">
+                <thead>
+                    <tr>
+                        <th style="text-align: left;">Các nhận định</th>
+                        <th class="tf-col-opt">Đúng</th>
+                        <th class="tf-col-opt">Sai</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${q.items.map((sub, sIdx) => `
+                        <tr id="row-p2-${idx}-${sIdx}">
+                            <td><b>${['a)', 'b)', 'c)', 'd)'][sIdx]}</b> ${sub.text}</td>
+                            <td class="tf-col-opt"><input type="radio" name="p2_${idx}_${sIdx}" value="true"></td>
+                            <td class="tf-col-opt"><input type="radio" name="p2_${idx}_${sIdx}" value="false"></td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+            <div class="ai-analysis-box" id="ai-exp-p2-${idx}"></div>
+        `;
+        c2.appendChild(qCard);
+    });
+}
+
+// MODAL POPUP
+function openConfirmModal() {
+    document.getElementById("confirm-modal").style.display = "flex";
+}
+function closeConfirmModal() {
+    document.getElementById("confirm-modal").style.display = "none";
+}
+
+// CHẤM ĐIỂM & BẬT AI PHÂN TÍCH
+function processSubmit() {
+    closeConfirmModal();
+    clearInterval(timerInterval);
+
+    // 1. Chấm Phần I (18 câu * 0,25đ = 4,50đ)
+    let p1Correct = 0;
+    currentP1.forEach((q, idx) => {
+        const radios = document.getElementsByName(`p1_${idx}`);
+        let userSelected = -1;
+        for (let i = 0; i < radios.length; i++) {
+            if (radios[i].checked) { userSelected = parseInt(radios[i].value); break; }
+        }
+
+        document.getElementById(`ai-exp-p1-${idx}`).style.display = "block";
+
+        if (userSelected !== -1) {
+            const userBox = document.getElementById(`opt-p1-${idx}-${userSelected}`);
+            if (userSelected === q.ans) {
+                p1Correct++;
+                userBox.classList.add("ans-correct");
+            } else {
+                userBox.classList.add("ans-wrong");
+                document.getElementById(`opt-p1-${idx}-${q.ans}`).classList.add("ans-correct");
+            }
+        } else {
+            document.getElementById(`opt-p1-${idx}-${q.ans}`).classList.add("ans-correct");
+        }
+    });
+    const p1Score = p1Correct * 0.25;
+
+    // 2. Chấm Phần II: 6 câu Đúng/Sai (Tối đa 2,50 điểm theo barem Bộ GD&ĐT)
+    // Quy chuẩn tính điểm 4 ý của Bộ GD: 1 ý=0.1đ; 2 ý=0.25đ; 3 ý=0.5đ; 4 ý=1.0đ
+    // Quy đổi về hệ 2,50 điểm cho 6 câu: Điểm = (Tổng điểm chuẩn / 6.0) * 2.5
+    let p2RawTotal = 0;
+    currentP2.forEach((q, idx) => {
+        let correctCount = 0;
+        let expText = `<div class="ai-tag">🤖 AI PHÂN TÍCH TỪNG Ý & CHỈ RA LỖI SAI</div>`;
+        expText += `<div style="font-style: italic; color: #455a64; margin-bottom: 8px;">💡 Tổng luận vật lí: ${q.aiGeneral}</div>`;
+
+        q.items.forEach((sub, sIdx) => {
+            const radios = document.getElementsByName(`p2_${idx}_${sIdx}`);
+            let val = null;
+            for (let i = 0; i < radios.length; i++) {
+                if (radios[i].checked) { val = (radios[i].value === "true"); break; }
+            }
+
+            const row = document.getElementById(`row-p2-${idx}-${sIdx}`);
+            expText += `<div class="ai-point">• <b>Ý ${['a)', 'b)', 'c)', 'd)'][sIdx]}:</b> Nhận định này [<b>${sub.ans ? "ĐÚNG" : "SAI"}</b>] → ${sub.exp}</div>`;
+
+            if (val !== null) {
+                if (val === sub.ans) {
+                    correctCount++;
+                    row.classList.add("ans-correct");
+                } else {
+                    row.classList.add("ans-wrong");
+                }
+            }
+        });
+
+        if (correctCount === 1) p2RawTotal += 0.1;
+        else if (correctCount === 2) p2RawTotal += 0.25;
+        else if (correctCount === 3) p2RawTotal += 0.5;
+        else if (correctCount === 4) p2RawTotal += 1.0;
+
+        const expBox = document.getElementById(`ai-exp-p2-${idx}`);
+        expBox.style.display = "block";
+        expBox.innerHTML = expText;
+    });
+
+    const p2Score = (p2RawTotal / 6.0) * 2.5;
+    const totalScore = Math.min(7.0, Math.round((p1Score + p2Score) * 100) / 100);
+
+    // AI Nhận xét
+    let evalText = "";
+    if (totalScore >= 6.25) {
+        evalText = "🌟 <b>ĐÁNH GIÁ TỪ AI: XUẤT SẮC!</b> Em nắm rất vững bản chất vật lí, tư duy giải quyết câu hỏi vận dụng cao (trung điểm CĐTNDĐ, bài toán giây đầu giây cuối) cực kì chuẩn xác.";
+    } else if (totalScore >= 5.0) {
+        evalText = "👏 <b>ĐÁNH GIÁ TỪ AI: KHÁ - TỐT!</b> Em nắm tốt lý thuyết và các bài toán tính toán cơ bản. Em hãy xem kĩ mục phân tích lỗi sai màu tím ở các câu chưa đạt điểm tối đa để tránh bị bẫy nhé.";
+    } else if (totalScore >= 3.5) {
+        evalText = "⚠️ <b>ĐÁNH GIÁ TỪ AI: ĐẠT MỨC TRUNG BÌNH.</b> Em còn nhầm lẫn giữa quãng đường (s) và độ dịch chuyển (d), cũng như tính sai số tỉ đối. Hãy đọc kĩ từng dòng phân tích màu tím của AI phía dưới.";
+    } else {
+        evalText = "❗ <b>ĐÁNH GIÁ TỪ AI: CẦN CỐ GẮNG ÔN TẬP LẠI!</b> Điểm số cho thấy em bị hổng nhiều kiến thức cơ bản. Em hãy xem hết các mục phân tích của AI rồi nhấn nút 'Làm đề thi mới' để rèn luyện lại.";
+    }
+
+    const resBox = document.getElementById("result-box");
+    resBox.className = "score-card";
+    resBox.innerHTML = `
+        <h3 style="color: var(--primary-dark);">KẾT QUẢ ĐIỂM TRẮC NGHIỆM GHK1 - VẬT LÍ 10</h3>
+        <div class="score-val">${totalScore.toFixed(2)} / 7.00 ĐIỂM</div>
+        <div style="font-size: 0.95rem; color: #424242;">
+            • Phần I (Trắc nghiệm nhiều lựa chọn): <b>${p1Score.toFixed(2)} / 4,50</b> (Đúng ${p1Correct}/18 câu)<br>
+            • Phần II (Trắc nghiệm Đúng / Sai): <b>${p2Score.toFixed(2)} / 2,50</b>
+        </div>
+        <div class="feedback-note">${evalText}</div>
+    `;
+    resBox.style.display = "block";
+
+    const allInputs = document.querySelectorAll("#screen-exam input");
+    allInputs.forEach(i => i.disabled = true);
+
+    document.getElementById("btn-submit").style.display = "none";
+    document.getElementById("btn-restart").style.display = "block";
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// GẮN SỰ KIỆN MƯỢT MÀ CHO MOBILE & PC
+document.addEventListener("DOMContentLoaded", function() {
+    document.getElementById("btn-start").addEventListener("click", handleStart);
+    document.getElementById("btn-submit").addEventListener("click", openConfirmModal);
+    document.getElementById("btn-modal-cancel").addEventListener("click", closeConfirmModal);
+    document.getElementById("btn-modal-ok").addEventListener("click", processSubmit);
+    document.getElementById("btn-restart").addEventListener("click", function() { location.reload(); });
+});
+</script>
+</body>
+</html>
